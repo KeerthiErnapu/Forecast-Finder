@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Password Reset</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f6f6f6;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        #resetForm {
+            width: 300px;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+        }
+
+        #resetForm h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        #resetForm label {
+            display: block;
+            margin-bottom: 10px;
+            color: #555;
+        }
+
+        #resetForm input[type="password"],
+        #resetForm input[type="submit"] {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+            font-size: 16px;
+        }
+
+        #resetForm input[type="submit"] {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        #resetForm input[type="submit"]:hover {
+            background-color: #45a049;
+        }
+
+        #errorText {
+            color: red;
+            display: none;
+            margin-top: 10px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+    <form id="resetForm" action="/resetpassword" method="post">
+        <h2>Password Reset</h2>
+        <div id="errorText"></div>
+        <input type="hidden" id="email" name="email">
+        <input type="hidden" id="token" name="token">
+        <label for="password">New Password:</label>
+        <input type="password" id="password" name="password" required>
+        <label for="confirmPassword">Confirm Password:</label>
+        <input type="password" id="confirmPassword" name="confirmPassword" required>
+        <input type="submit" value="Reset Password">
+    </form>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const email = urlParams.get('email');
+            const token = urlParams.get('token');
+            document.getElementById('email').value = email;
+            document.getElementById('token').value = token;
+        });
+
+        document.getElementById('resetForm').addEventListener('submit', function(event) {
+            event.preventDefault(); // Prevent default form submission
+
+            const email = document.getElementById('email').value;
+            const token = document.getElementById('token').value;
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+
+            // Check if passwords match
+            if (password !== confirmPassword) {
+                document.getElementById('errorText').textContent = 'Passwords do not match';
+                document.getElementById('errorText').style.display = 'block';
+                return;
+            }
+
+            // Send AJAX request to server
+            fetch('/resetpassword', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ email: email, password: password, token: token })
+            })
+            .then(response => {
+                if (response.ok) {
+                    // Password reset successful
+                    window.location.href = '/login'; // Redirect to login page
+                } else {
+                    // Handle other errors
+                    document.getElementById('errorText').textContent = 'An error occurred. Please try again later.';
+                    document.getElementById('errorText').style.display = 'block';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                // Display generic error message
+                document.getElementById('errorText').textContent = 'An error occurred. Please try again later.';
+                document.getElementById('errorText').style.display = 'block';
+            });
+        });
+    </script>
+</body>
+</html>
